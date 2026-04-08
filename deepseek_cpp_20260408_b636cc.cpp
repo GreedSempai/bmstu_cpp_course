@@ -43,7 +43,7 @@ class optional
 	optional(optional&& other) noexcept : is_initialized_(other.is_initialized_) {
 		if (is_initialized_) {
 			new (&data_[0]) T(std::move(other.value()));
-			other.reset();
+			other.is_initialized_ = false;
 		}
 	}
 
@@ -73,11 +73,8 @@ class optional
 
 	optional& operator=(const optional& other) {
 		if (this != &other) {
-			if (is_initialized_ && other.is_initialized_) {
-				value() = other.value();
-			} else if (is_initialized_) {
-				reset();
-			} else if (other.is_initialized_) {
+			reset();
+			if (other.is_initialized_) {
 				new (&data_[0]) T(other.value());
 				is_initialized_ = true;
 			}
@@ -88,10 +85,8 @@ class optional
 	// ИСПРАВЛЕННЫЙ move assignment
 	optional& operator=(optional&& other) noexcept {
 		if (this != &other) {
-			reset();  // Очищаем текущий объект
-			
-			if (other.has_value()) {
-				// Перемещаем значение из other
+			reset();
+			if (other.is_initialized_) {
 				new (&data_[0]) T(std::move(other.value()));
 				is_initialized_ = true;
 				other.reset();
