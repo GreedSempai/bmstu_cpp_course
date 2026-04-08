@@ -1,25 +1,473 @@
-[main] Building folder: /home/greed/yap/bmstu_cpp_course/tasks/task_map/build 
-[build] Starting build
-[proc] Executing command: /usr/bin/cmake --build /home/greed/yap/bmstu_cpp_course/tasks/task_map/build --config Debug --target all -j 2 --
-[build] [ 50%] Building CXX object CMakeFiles/bmstu_optional.dir/task_optional/bmstu_optional_test.o
-[build] In file included from /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional_test.cpp:1:
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional.h: In instantiation of ‘bmstu::optional<T>& bmstu::optional<T>::operator=(U&&) [with U = int&; <template-parameter-2-2> = void; T = int]’:
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional_test.cpp:151:6:   required from here
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional.h:132:18: error: expression cannot be used as a function
-[build]   132 |             value() = T(std::forward<U>(value));
-[build]       |             ~~~~~^~
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional.h: In instantiation of ‘bmstu::optional<T>& bmstu::optional<T>::operator=(U&&) [with U = std::__cxx11::basic_string<char>&; <template-parameter-2-2> = void; T = std::__cxx11::basic_string<char>]’:
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional_test.cpp:161:6:   required from here
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional.h:132:18: error: no match for call to ‘(std::__cxx11::basic_string<char>) ()’
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional.h: In instantiation of ‘bmstu::optional<T>& bmstu::optional<T>::operator=(U&&) [with U = Tracker&; <template-parameter-2-2> = void; T = Tracker]’:
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional_test.cpp:320:9:   required from here
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional.h:132:18: error: no match for call to ‘(Tracker) ()’
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional.h: In instantiation of ‘bmstu::optional<T>& bmstu::optional<T>::operator=(U&&) [with U = const char (&)[5]; <template-parameter-2-2> = void; T = std::__cxx11::basic_string<char>]’:
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional_test.cpp:681:8:   required from here
-[build] /home/greed/yap/bmstu_cpp_course/tasks/bmstu_optional/task_optional/bmstu_optional.h:132:18: error: expression cannot be used as a function
-[build] gmake[2]: *** [CMakeFiles/bmstu_optional.dir/build.make:76: CMakeFiles/bmstu_optional.dir/task_optional/bmstu_optional_test.o] Error 1
-[build] gmake[1]: *** [CMakeFiles/Makefile2:83: CMakeFiles/bmstu_optional.dir/all] Error 2
-[build] gmake: *** [Makefile:91: all] Error 2
-[proc] The command: /usr/bin/cmake --build /home/greed/yap/bmstu_cpp_course/tasks/task_map/build --config Debug --target all -j 2 -- exited with code: 2
-[driver] Build completed: 00:00:01.315
-[build] Build finished with exit code 2
+/*
+ * ЗАДАНИЕ: Реализация std::map на основе AVL-дерева
+ *
+ * Цель: Создать полноценный аналог std::map с использованием
+ * самобалансирующегося AVL-дерева в качестве внутренней структуры данных.
+ *
+ * Что нужно реализовать:
+ *
+ * 1. AVL Tree (avl_balanced_tree):
+ *    - insert() - вставка пары ключ-значение с балансировкой
+ *    - remove() - удаление по ключу с балансировкой
+ *    - find() - поиск узла по ключу
+ *    - balance() - балансировка дерева (проверка высот и вызов поворотов)
+ *    - Повороты: rotateWithLeftChild, rotateWithRightChild,
+ *                doubleWithLeftChild, doubleWithRightChild
+ *    - Вспомогательные: heightOfTree(), findMinPtr()
+ *
+ * 2. Iterator (map::iterator):
+ *    - Конструктор для инициализации (найти самый левый узел для begin)
+ *    - operator*() - разыменование (вернуть std::pair<const K, V>)
+ *    - operator++() - переход к следующему элементу в in-order обходе
+ *    - Использовать std::stack для обхода дерева
+ *
+ * 3. Map (map):
+ *    - Все публичные методы уже реализованы и используют AVL дерево
+ *    - После реализации AVL дерева и итератора, map будет работать полностью
+ *
+ * Особенности AVL дерева:
+ * - Для каждого узла разность высот левого и правого поддеревьев <= 1
+ * - После вставки/удаления может потребоваться 1-2 поворота для балансировки
+ * - 4 случая дисбаланса: LL, LR, RR, RL (Left-Left, Left-Right, и т.д.)
+ *
+ * Тестирование:
+ * - Запустите тесты: ./tasks/bmstu_map/bmstu_map
+ * - Все 18 тестов должны пройти успешно после полной реализации
+ */
+
+#include <cstddef>
+#include <cstdint>
+#include <iostream>
+#include <iterator>
+#include <stack>
+#include <stdexcept>
+#include <utility>
+
+namespace bmstu
+{
+// ==================== AVL Tree Node ====================
+template <typename K, typename V>
+struct tree_node
+{
+	tree_node(const K& k, const V& v)
+		: key(k), value(v), left(nullptr), right(nullptr), height(1)
+	{
+	}
+
+	K key;
+	V value;
+	uint8_t height;
+	tree_node* left;
+	tree_node* right;
+};
+
+// ==================== AVL Balanced Tree ====================
+template <typename K, typename V>
+class avl_balanced_tree
+{
+   public:
+	avl_balanced_tree() : root_(nullptr), size_(0) {}
+	~avl_balanced_tree() { clear(root_); }
+
+	void insert(const K& key, const V& value)
+	{
+		this->insert(key, value, root_);
+	}
+
+	void remove(const K& key) { this->remove(key, root_); }
+
+	tree_node<K, V>* find(const K& key) { return this->find(key, root_); }
+
+	const tree_node<K, V>* find(const K& key) const
+	{
+		return this->find(key, root_);
+	}
+
+	bool contains(const K& key) const { return find(key) != nullptr; }
+
+	size_t size() const { return size_; }
+
+	bool empty() const { return size_ == 0; }
+
+	tree_node<K, V>* get_root() { return root_; }
+
+	const tree_node<K, V>* get_root() const { return root_; }
+
+	void print() { print_tree_(root_, 1); }
+
+	void inorder_print()
+	{
+		inorder_print(root_);
+		std::cout << "\n";
+	}
+
+   private:
+	tree_node<K, V>* insert(const K& key,
+							const V& value,
+							tree_node<K, V>*& node)
+	{
+		if (node == nullptr) {
+			node = new tree_node<K, V>(key, value);
+			++size_;
+			return node;
+		}
+		
+		if (key < node->key) {
+			insert(key, value, node->left);
+		} else if (key > node->key) {
+			insert(key, value, node->right);
+		} else {
+			node->value = value;
+			return node;
+		}
+		
+		balance(node);
+		return node;
+	}
+
+	void remove(const K& key, tree_node<K, V>*& node)
+	{
+		if (node == nullptr) {
+			return;
+		}
+		
+		if (key < node->key) {
+			remove(key, node->left);
+		} else if (key > node->key) {
+			remove(key, node->right);
+		} else {
+			--size_;
+			
+			if (node->left == nullptr && node->right == nullptr) {
+				delete node;
+				node = nullptr;
+			} else if (node->left != nullptr && node->right == nullptr) {
+				auto ptr = node;
+				node = node->left;
+				delete ptr;
+			} else if (node->left == nullptr && node->right != nullptr) {
+				auto ptr = node;
+				node = node->right;
+				delete ptr;
+			} else {
+				auto minNode = findMinPtr(node->right);
+				node->key = minNode->key;
+				node->value = minNode->value;
+				remove(minNode->key, node->right);
+			}
+		}
+		
+		if (node) {
+			balance(node);
+		}
+	}
+
+	tree_node<K, V>* find(const K& key, tree_node<K, V>* node) const
+	{
+		if (node == nullptr) return nullptr;
+		if (key == node->key) return node;
+		if (key < node->key) return find(key, node->left);
+		return find(key, node->right);
+	}
+
+	tree_node<K, V>* findMinPtr(tree_node<K, V>* node)
+	{
+		if (node == nullptr) return nullptr;
+		if (node->left == nullptr) return node;
+		return findMinPtr(node->left);
+	}
+
+	uint8_t heightOfTree(tree_node<K, V>* t)
+	{
+		if (t == nullptr) return 0;
+		return t->height;
+	}
+	
+	void updateHeight(tree_node<K, V>* t)
+	{
+		if (t) {
+			t->height = 1 + std::max(heightOfTree(t->left), heightOfTree(t->right));
+		}
+	}
+
+	void rotateWithLeftChild(tree_node<K, V>*& k2)
+	{
+		auto k1 = k2->left;
+		k2->left = k1->right;
+		updateHeight(k2);
+		updateHeight(k1);
+		k1->right = k2;
+		k2 = k1;
+	}
+
+	void rotateWithRightChild(tree_node<K, V>*& k1)
+	{
+		auto k2 = k1->right;
+		k1->right = k2->left;
+		updateHeight(k1);
+		updateHeight(k2);
+		k2->left = k1;
+		k1 = k2;
+	}
+
+	void doubleWithLeftChild(tree_node<K, V>*& k3)
+	{
+		rotateWithRightChild(k3->left);
+		rotateWithLeftChild(k3);
+	}
+
+	void doubleWithRightChild(tree_node<K, V>*& k1)
+	{
+		rotateWithLeftChild(k1->right);
+		rotateWithRightChild(k1);
+	}
+
+	void balance(tree_node<K, V>*& t)
+	{
+		if (t == nullptr) return;
+		
+		int balance = heightOfTree(t->left) - heightOfTree(t->right);
+		
+		if (balance > 1) {
+			if (heightOfTree(t->left->left) >= heightOfTree(t->left->right)) {
+				rotateWithLeftChild(t);
+			} else {
+				doubleWithLeftChild(t);
+			}
+		} else if (balance < -1) {
+			if (heightOfTree(t->right->right) >= heightOfTree(t->right->left)) {
+				rotateWithRightChild(t);
+			} else {
+				doubleWithRightChild(t);
+			}
+		}
+		
+		updateHeight(t);
+	}
+
+	void inorder_print(tree_node<K, V>* node)
+	{
+		if (node == nullptr)
+		{
+			return;
+		}
+		inorder_print(node->left);
+		std::cout << "[" << node->key << ":" << node->value << "] ";
+		inorder_print(node->right);
+	}
+
+	void clear(tree_node<K, V>* node)
+	{
+		if (node != nullptr)
+		{
+			clear(node->left);
+			clear(node->right);
+			delete node;
+		}
+	}
+
+	void print_tree_(tree_node<K, V>* node, int space)
+	{
+		if (node == nullptr)
+		{
+			return;
+		}
+		space += 5;
+		this->print_tree_(node->right, space);
+		for (int i = 0; i < space; ++i)
+		{
+			std::cout << " ";
+		}
+		std::cout << node->key << ":" << node->value << "\n";
+		this->print_tree_(node->left, space);
+	}
+
+	tree_node<K, V>* root_ = nullptr;
+	size_t size_ = 0;
+};
+
+// ==================== Map Class ====================
+template <typename K, typename V>
+class map
+{
+   public:
+	using key_type = K;
+	using mapped_type = V;
+	using value_type = std::pair<const K, V>;
+
+	// ==================== Iterator ====================
+	struct iterator
+	{
+		using iterator_category = std::bidirectional_iterator_tag;
+		using value_type = std::pair<const K, V>;
+		using difference_type = std::ptrdiff_t;
+		using pointer = value_type*;
+		using reference = value_type&;
+
+		tree_node<K, V>* current_;
+		std::stack<tree_node<K, V>*> stack_;
+		mutable value_type pair_cache_;
+
+		iterator() : current_(nullptr), pair_cache_(K{}, V{}) {}
+
+		explicit iterator(tree_node<K, V>* root, bool is_end = false)
+			: current_(nullptr), pair_cache_(K{}, V{})
+		{
+			if (!is_end && root != nullptr) {
+				tree_node<K, V>* node = root;
+				while (node != nullptr) {
+					stack_.push(node);
+					node = node->left;
+				}
+				if (!stack_.empty()) {
+					current_ = stack_.top();
+					stack_.pop();
+					pair_cache_ = value_type(current_->key, current_->value);
+				}
+			}
+		}
+
+		reference operator*() const
+		{
+			pair_cache_ = value_type(current_->key, current_->value);
+			return pair_cache_;
+		}
+
+		pointer operator->() const
+		{
+			pair_cache_ = value_type(current_->key, current_->value);
+			return &pair_cache_;
+		}
+
+		iterator& operator++()
+		{
+			if (current_->right != nullptr) {
+				tree_node<K, V>* node = current_->right;
+				while (node != nullptr) {
+					stack_.push(node);
+					node = node->left;
+				}
+			}
+			
+			if (stack_.empty()) {
+				current_ = nullptr;
+			} else {
+				current_ = stack_.top();
+				stack_.pop();
+				pair_cache_ = value_type(current_->key, current_->value);
+			}
+			
+			return *this;
+		}
+
+		iterator operator++(int)
+		{
+			iterator temp = *this;
+			++(*this);
+			return temp;
+		}
+
+		iterator& operator--()
+		{
+			// Упрощенная реализация -- (для bidirectional)
+			return *this;
+		}
+
+		iterator operator--(int)
+		{
+			iterator temp = *this;
+			--(*this);
+			return temp;
+		}
+
+		bool operator==(const iterator& other) const
+		{
+			return current_ == other.current_;
+		}
+
+		bool operator!=(const iterator& other) const
+		{
+			return current_ != other.current_;
+		}
+	};
+
+	map() = default;
+	~map() = default;
+
+	void insert(const K& key, const V& value) { tree_.insert(key, value); }
+
+	void insert(const value_type& pair)
+	{
+		tree_.insert(pair.first, pair.second);
+	}
+
+	V& operator[](const K& key)
+	{
+		auto node = tree_.find(key);
+		if (node == nullptr)
+		{
+			tree_.insert(key, V());
+			node = tree_.find(key);
+		}
+		return node->value;
+	}
+
+	V* find(const K& key)
+	{
+		auto node = tree_.find(key);
+		return node ? &node->value : nullptr;
+	}
+
+	const V* find(const K& key) const
+	{
+		auto node = tree_.find(key);
+		return node ? &node->value : nullptr;
+	}
+
+	V& at(const K& key)
+	{
+		auto node = tree_.find(key);
+		if (node == nullptr)
+		{
+			throw std::out_of_range("Key not found in map");
+		}
+		return node->value;
+	}
+
+	const V& at(const K& key) const
+	{
+		auto node = tree_.find(key);
+		if (node == nullptr)
+		{
+			throw std::out_of_range("Key not found in map");
+		}
+		return node->value;
+	}
+
+	void erase(const K& key) { tree_.remove(key); }
+
+	bool contains(const K& key) const { return tree_.contains(key); }
+
+	size_t size() const { return tree_.size(); }
+
+	bool empty() const { return tree_.empty(); }
+
+	void clear()
+	{
+		tree_.~avl_balanced_tree();
+		new (&tree_) avl_balanced_tree<K, V>();
+	}
+
+	void print() { tree_.print(); }
+
+	void inorder_print() { tree_.inorder_print(); }
+
+	iterator begin() { return iterator(tree_.get_root(), false); }
+
+	iterator end() { return iterator(tree_.get_root(), true); }
+
+   private:
+	avl_balanced_tree<K, V> tree_;
+};
+
+}  // namespace bmstu
