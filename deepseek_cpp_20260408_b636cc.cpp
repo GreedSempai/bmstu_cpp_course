@@ -1,11 +1,11 @@
-message(STATUS "Configuring bmstu_optional")
+message(STATUS "Configuring bmstu_map")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 get_filename_component(NAME_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
-# Ищем папку task_optional
+# Ищем папку task_map
 file(GLOB TASK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/task_*)
 
 if(NOT TASK_DIR)
@@ -19,7 +19,7 @@ file(GLOB SOURCES
     ${TASK_DIR}/*.hpp
 )
 
-message(STATUS "bmstu_optional sources: ${SOURCES}")
+message(STATUS "bmstu_map sources: ${SOURCES}")
 
 # Создаем исполняемый файл
 add_executable(${NAME_EXECUTABLE} ${SOURCES})
