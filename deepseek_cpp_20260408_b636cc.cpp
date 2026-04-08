@@ -85,14 +85,13 @@ class optional
 		return *this;
 	}
 
+	// ИСПРАВЛЕННЫЙ move assignment
 	optional& operator=(optional&& other) noexcept {
 		if (this != &other) {
-			if (is_initialized_ && other.is_initialized_) {
-				value() = std::move(other.value());
-				other.reset();
-			} else if (is_initialized_) {
-				reset();
-			} else if (other.is_initialized_) {
+			reset();  // Очищаем текущий объект
+			
+			if (other.has_value()) {
+				// Перемещаем значение из other
 				new (&data_[0]) T(std::move(other.value()));
 				is_initialized_ = true;
 				other.reset();
