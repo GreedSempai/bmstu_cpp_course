@@ -1,216 +1,517 @@
- *  Executing task: C/C++: g++ build active file 
+/*
+ * ЗАДАНИЕ: Реализация std::map на основе AVL-дерева
+ *
+ * Цель: Создать полноценный аналог std::map с использованием
+ * самобалансирующегося AVL-дерева в качестве внутренней структуры данных.
+ *
+ * Что нужно реализовать:
+ *
+ * 1. AVL Tree (avl_balanced_tree):
+ *    - insert() - вставка пары ключ-значение с балансировкой
+ *    - remove() - удаление по ключу с балансировкой
+ *    - find() - поиск узла по ключу
+ *    - balance() - балансировка дерева (проверка высот и вызов поворотов)
+ *    - Повороты: rotateWithLeftChild, rotateWithRightChild,
+ *                doubleWithLeftChild, doubleWithRightChild
+ *    - Вспомогательные: heightOfTree(), findMinPtr()
+ *
+ * 2. Iterator (map::iterator):
+ *    - Конструктор для инициализации (найти самый левый узел для begin)
+ *    - operator*() - разыменование (вернуть std::pair<const K, V>)
+ *    - operator++() - переход к следующему элементу в in-order обходе
+ *    - Использовать std::stack для обхода дерева
+ *
+ * 3. Map (map):
+ *    - Все публичные методы уже реализованы и используют AVL дерево
+ *    - После реализации AVL дерева и итератора, map будет работать полностью
+ *
+ * Особенности AVL дерева:
+ * - Для каждого узла разность высот левого и правого поддеревьев <= 1
+ * - После вставки/удаления может потребоваться 1-2 поворота для балансировки
+ * - 4 случая дисбаланса: LL, LR, RR, RL (Left-Left, Left-Right, и т.д.)
+ *
+ * Тестирование:
+ * - Запустите тесты: ./tasks/bmstu_map/bmstu_map
+ * - Все 18 тестов должны пройти успешно после полной реализации
+ */
 
-Starting build...
-/usr/bin/g++ -fdiagnostics-color=always -g /home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp -o /home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test
-In file included from /home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:1:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:51: error: expected template-name before ‘<’ token
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                                                   ^
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:51: error: expected ‘{’ before ‘<’ token
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:51: error: expected unqualified-id before ‘<’ token
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp: In member function ‘virtual void MapTest_IteratorBasic_Test::TestBody()’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:217:33: error: invalid use of incomplete type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  217 |         for (auto it = map.begin(); it != map.end(); ++it)
-      |                        ~~~~~~~~~^~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:217:50: error: invalid use of incomplete type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  217 |         for (auto it = map.begin(); it != map.end(); ++it)
-      |                                           ~~~~~~~^~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp: In member function ‘virtual void MapTest_RangeBasedFor_Test::TestBody()’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:249:41: error: invalid use of incomplete type ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’
-  249 |         for (const auto& [key, value] : map)
-      |                                         ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:249:41: error: invalid use of incomplete type ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’
-  249 |         for (const auto& [key, value] : map)
-      |                                         ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp: In member function ‘virtual void MapTest_EmptyRangeIteration_Test::TestBody()’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:272:41: error: invalid use of incomplete type ‘struct bmstu::map<int, int>::iterator’
-  272 |         for (const auto& [key, value] : map)
-      |                                         ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:272:41: error: invalid use of incomplete type ‘struct bmstu::map<int, int>::iterator’
-  272 |         for (const auto& [key, value] : map)
-      |                                         ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp: In member function ‘virtual void MapTest_SingleElementIteration_Test::TestBody()’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:286:41: error: invalid use of incomplete type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  286 |         for (const auto& [key, value] : map)
-      |                                         ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:286:41: error: invalid use of incomplete type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  286 |         for (const auto& [key, value] : map)
-      |                                         ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp: In member function ‘virtual void MapTest_IteratorNumericKeys_Test::TestBody()’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:306:41: error: invalid use of incomplete type ‘struct bmstu::map<double, int>::iterator’
-  306 |         for (const auto& [key, value] : map)
-      |                                         ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<double, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:306:41: error: invalid use of incomplete type ‘struct bmstu::map<double, int>::iterator’
-  306 |         for (const auto& [key, value] : map)
-      |                                         ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<double, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp: In member function ‘virtual void MapTest_IteratorArrowOperator_Test::TestBody()’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:325:33: error: invalid use of incomplete type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  325 |         for (auto it = map.begin(); it != map.end(); ++it)
-      |                        ~~~~~~~~~^~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:325:50: error: invalid use of incomplete type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  325 |         for (auto it = map.begin(); it != map.end(); ++it)
-      |                                           ~~~~~~~^~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp: In member function ‘virtual void MapTest_RangeBasedForDemo_Test::TestBody()’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:343:48: error: invalid use of incomplete type ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’
-  343 |         for (const auto& [product, category] : catalog)
-      |                                                ^~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:343:48: error: invalid use of incomplete type ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’
-  343 |         for (const auto& [product, category] : catalog)
-      |                                                ^~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::begin() [with K = int; V = std::__cxx11::basic_string<char>]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:217:26:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:18: error: return type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’ is incomplete
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                  ^~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:35: error: invalid use of incomplete type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::end() [with K = int; V = std::__cxx11::basic_string<char>]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:217:43:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:18: error: return type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’ is incomplete
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                  ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:33: error: invalid use of incomplete type ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::begin() [with K = std::__cxx11::basic_string<char>; V = int]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:249:34:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:18: error: return type ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’ is incomplete
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                  ^~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:35: error: invalid use of incomplete type ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::end() [with K = std::__cxx11::basic_string<char>; V = int]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:249:34:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:18: error: return type ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’ is incomplete
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                  ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:33: error: invalid use of incomplete type ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<std::__cxx11::basic_string<char>, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::begin() [with K = int; V = int]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:272:34:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:18: error: return type ‘struct bmstu::map<int, int>::iterator’ is incomplete
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                  ^~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:35: error: invalid use of incomplete type ‘struct bmstu::map<int, int>::iterator’
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::end() [with K = int; V = int]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:272:34:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:18: error: return type ‘struct bmstu::map<int, int>::iterator’ is incomplete
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                  ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:33: error: invalid use of incomplete type ‘struct bmstu::map<int, int>::iterator’
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<int, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::begin() [with K = double; V = int]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:306:34:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:18: error: return type ‘struct bmstu::map<double, int>::iterator’ is incomplete
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                  ^~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:35: error: invalid use of incomplete type ‘struct bmstu::map<double, int>::iterator’
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<double, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::end() [with K = double; V = int]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:306:34:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:18: error: return type ‘struct bmstu::map<double, int>::iterator’ is incomplete
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                  ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:33: error: invalid use of incomplete type ‘struct bmstu::map<double, int>::iterator’
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<double, int>::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::begin() [with K = std::__cxx11::basic_string<char>; V = std::__cxx11::basic_string<char>]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:343:41:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:18: error: return type ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’ is incomplete
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                  ^~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:553:35: error: invalid use of incomplete type ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’
-  553 |         iterator begin() { return iterator(tree_.get_root(), false); }
-      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h: In instantiation of ‘bmstu::map<K, V>::iterator bmstu::map<K, V>::end() [with K = std::__cxx11::basic_string<char>; V = std::__cxx11::basic_string<char>]’:
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map_test.cpp:343:41:   required from here
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:18: error: return type ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’ is incomplete
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                  ^~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:555:33: error: invalid use of incomplete type ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’
-  555 |         iterator end() { return iterator(tree_.get_root(), true); }
-      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/greed/yap/bmstu_cpp_course/tasks/bmstu_map/task_map/bmstu_map.h:347:16: note: declaration of ‘struct bmstu::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >::iterator’
-  347 |         struct iterator : public abstract_iterator<iterator,
-      |                ^~~~~~~~
+#include <cstddef>
+#include <cstdint>
+#include <iostream>
+#include <iterator>
+#include <stack>
+#include <stdexcept>
+#include <utility>
 
-Build finished with error(s).
+namespace bmstu
+{
+// ==================== AVL Tree Node ====================
+template <typename K, typename V>
+struct tree_node
+{
+	tree_node(const K& k, const V& v)
+		: key(k), value(v), left(nullptr), right(nullptr), height(1)
+	{
+	}
 
- *  The terminal process terminated with exit code: -1. 
- *  Terminal will be reused by tasks, press any key to close it. 
+	K key;
+	V value;
+	uint8_t height;
+	tree_node* left;
+	tree_node* right;
+};
+
+// ==================== AVL Balanced Tree ====================
+template <typename K, typename V>
+class avl_balanced_tree
+{
+   public:
+	avl_balanced_tree() : root_(nullptr), size_(0) {}
+	~avl_balanced_tree() { clear(root_); }
+
+	void insert(const K& key, const V& value)
+	{
+		insert(key, value, root_);
+	}
+
+	void remove(const K& key) { remove(key, root_); }
+
+	tree_node<K, V>* find(const K& key) { return find(key, root_); }
+
+	const tree_node<K, V>* find(const K& key) const
+	{
+		return find(key, root_);
+	}
+
+	bool contains(const K& key) const { return find(key) != nullptr; }
+
+	size_t size() const { return size_; }
+
+	bool empty() const { return size_ == 0; }
+
+	tree_node<K, V>* get_root() { return root_; }
+
+	const tree_node<K, V>* get_root() const { return root_; }
+
+	void print() { print_tree_(root_, 1); }
+
+	void inorder_print()
+	{
+		inorder_print(root_);
+		std::cout << "\n";
+	}
+
+   private:
+	tree_node<K, V>* insert(const K& key,
+							const V& value,
+							tree_node<K, V>*& node)
+	{
+		if (node == nullptr)
+		{
+			node = new tree_node<K, V>(key, value);
+			size_++;
+			return node;
+		}
+
+		if (key < node->key)
+		{
+			insert(key, value, node->left);
+		}
+		else if (key > node->key)
+		{
+			insert(key, value, node->right);
+		}
+		else
+		{
+			node->value = value;
+			return node;
+		}
+
+		balance(node);
+		return node;
+	}
+
+	void remove(const K& key, tree_node<K, V>*& node)
+	{
+		if (node == nullptr)
+		{
+			return;
+		}
+
+		if (key < node->key)
+		{
+			remove(key, node->left);
+		}
+		else if (key > node->key)
+		{
+			remove(key, node->right);
+		}
+		else
+		{
+			if (node->left == nullptr && node->right == nullptr)
+			{
+				delete node;
+				node = nullptr;
+				size_--;
+				return;
+			}
+			else if (node->left == nullptr)
+			{
+				tree_node<K, V>* temp = node;
+				node = node->right;
+				delete temp;
+				size_--;
+			}
+			else if (node->right == nullptr)
+			{
+				tree_node<K, V>* temp = node;
+				node = node->left;
+				delete temp;
+				size_--;
+			}
+			else
+			{
+				tree_node<K, V>* minNode = findMinPtr(node->right);
+				const_cast<K&>(node->key) = minNode->key;
+				node->value = minNode->value;
+				remove(minNode->key, node->right);
+			}
+			balance(node);
+			return;
+		}
+
+		balance(node);
+	}
+
+	tree_node<K, V>* find(const K& key, tree_node<K, V>* node) const
+	{
+		if (node == nullptr)
+		{
+			return nullptr;
+		}
+
+		if (key < node->key)
+		{
+			return find(key, node->left);
+		}
+		else if (key > node->key)
+		{
+			return find(key, node->right);
+		}
+		else
+		{
+			return node;
+		}
+	}
+
+	tree_node<K, V>* findMinPtr(tree_node<K, V>* node)
+	{
+		if (node == nullptr)
+		{
+			return nullptr;
+		}
+		while (node->left != nullptr)
+		{
+			node = node->left;
+		}
+		return node;
+	}
+
+	uint8_t heightOfTree(tree_node<K, V>* t)
+	{
+		return t == nullptr ? 0 : t->height;
+	}
+
+	void rotateWithLeftChild(tree_node<K, V>*& k2)
+	{
+		tree_node<K, V>* k1 = k2->left;
+		k2->left = k1->right;
+		k1->right = k2;
+
+		k2->height = 1 + std::max(heightOfTree(k2->left), heightOfTree(k2->right));
+		k1->height = 1 + std::max(heightOfTree(k1->left), heightOfTree(k1->right));
+
+		k2 = k1;
+	}
+
+	void rotateWithRightChild(tree_node<K, V>*& k1)
+	{
+		tree_node<K, V>* k2 = k1->right;
+		k1->right = k2->left;
+		k2->left = k1;
+
+		k1->height = 1 + std::max(heightOfTree(k1->left), heightOfTree(k1->right));
+		k2->height = 1 + std::max(heightOfTree(k2->left), heightOfTree(k2->right));
+
+		k1 = k2;
+	}
+
+	void doubleWithLeftChild(tree_node<K, V>*& k3)
+	{
+		rotateWithRightChild(k3->left);
+		rotateWithLeftChild(k3);
+	}
+
+	void doubleWithRightChild(tree_node<K, V>*& k1)
+	{
+		rotateWithLeftChild(k1->right);
+		rotateWithRightChild(k1);
+	}
+
+	void balance(tree_node<K, V>*& t)
+	{
+		if (t == nullptr)
+		{
+			return;
+		}
+
+		t->height = 1 + std::max(heightOfTree(t->left), heightOfTree(t->right));
+
+		int balanceFactor = heightOfTree(t->left) - heightOfTree(t->right);
+
+		if (balanceFactor > 1)
+		{
+			if (heightOfTree(t->left->left) >= heightOfTree(t->left->right))
+			{
+				rotateWithLeftChild(t);
+			}
+			else
+			{
+				doubleWithLeftChild(t);
+			}
+		}
+		else if (balanceFactor < -1)
+		{
+			if (heightOfTree(t->right->right) >= heightOfTree(t->right->left))
+			{
+				rotateWithRightChild(t);
+			}
+			else
+			{
+				doubleWithRightChild(t);
+			}
+		}
+	}
+
+	void inorder_print(tree_node<K, V>* node)
+	{
+		if (node == nullptr)
+		{
+			return;
+		}
+		inorder_print(node->left);
+		std::cout << "[" << node->key << ":" << node->value << "] ";
+		inorder_print(node->right);
+	}
+
+	void clear(tree_node<K, V>* node)
+	{
+		if (node != nullptr)
+		{
+			clear(node->left);
+			clear(node->right);
+			delete node;
+		}
+	}
+
+	void print_tree_(tree_node<K, V>* node, int space)
+	{
+		if (node == nullptr)
+		{
+			return;
+		}
+		space += 5;
+		this->print_tree_(node->right, space);
+		for (int i = 0; i < space; ++i)
+		{
+			std::cout << " ";
+		}
+		std::cout << node->key << ":" << node->value << "\n";
+		this->print_tree_(node->left, space);
+	}
+
+	tree_node<K, V>* root_ = nullptr;
+	size_t size_ = 0;
+};
+
+// ==================== Map Class ====================
+template <typename K, typename V>
+class map
+{
+   public:
+	using key_type = K;
+	using mapped_type = V;
+	using value_type = std::pair<const K, V>;
+
+	// ==================== Iterator ====================
+	struct iterator
+	{
+		tree_node<K, V>* current_;
+		std::stack<tree_node<K, V>*> stack_;
+		mutable value_type pair_cache_;
+
+		iterator() : current_(nullptr), pair_cache_(K{}, V{}) {}
+
+		explicit iterator(tree_node<K, V>* root, bool is_end = false)
+			: current_(nullptr), pair_cache_(K{}, V{})
+		{
+			if (is_end || root == nullptr)
+			{
+				current_ = nullptr;
+				return;
+			}
+
+			tree_node<K, V>* node = root;
+			while (node != nullptr)
+			{
+				stack_.push(node);
+				node = node->left;
+			}
+
+			if (!stack_.empty())
+			{
+				current_ = stack_.top();
+				stack_.pop();
+				pair_cache_ = {current_->key, current_->value};
+
+				tree_node<K, V>* rightNode = current_->right;
+				while (rightNode != nullptr)
+				{
+					stack_.push(rightNode);
+					rightNode = rightNode->left;
+				}
+			}
+		}
+
+		value_type& operator*() const
+		{
+			pair_cache_ = {current_->key, current_->value};
+			return pair_cache_;
+		}
+
+		value_type* operator->() const
+		{
+			pair_cache_ = {current_->key, current_->value};
+			return &pair_cache_;
+		}
+
+		iterator& operator++()
+		{
+			if (!stack_.empty())
+			{
+				current_ = stack_.top();
+				stack_.pop();
+				pair_cache_ = {current_->key, current_->value};
+
+				tree_node<K, V>* rightNode = current_->right;
+				while (rightNode != nullptr)
+				{
+					stack_.push(rightNode);
+					rightNode = rightNode->left;
+				}
+			}
+			else
+			{
+				current_ = nullptr;
+			}
+			return *this;
+		}
+
+		iterator operator++(int)
+		{
+			iterator temp = *this;
+			++(*this);
+			return temp;
+		}
+
+		bool operator==(const iterator& other) const
+		{
+			return current_ == other.current_;
+		}
+
+		bool operator!=(const iterator& other) const
+		{
+			return current_ != other.current_;
+		}
+	};
+
+	map() = default;
+	~map() = default;
+
+	void insert(const K& key, const V& value) { tree_.insert(key, value); }
+
+	void insert(const value_type& pair)
+	{
+		tree_.insert(pair.first, pair.second);
+	}
+
+	V& operator[](const K& key)
+	{
+		auto node = tree_.find(key);
+		if (node == nullptr)
+		{
+			tree_.insert(key, V());
+			node = tree_.find(key);
+		}
+		return node->value;
+	}
+
+	V* find(const K& key)
+	{
+		auto node = tree_.find(key);
+		return node ? &node->value : nullptr;
+	}
+
+	const V* find(const K& key) const
+	{
+		auto node = tree_.find(key);
+		return node ? &node->value : nullptr;
+	}
+
+	V& at(const K& key)
+	{
+		auto node = tree_.find(key);
+		if (node == nullptr)
+		{
+			throw std::out_of_range("Key not found in map");
+		}
+		return node->value;
+	}
+
+	const V& at(const K& key) const
+	{
+		auto node = tree_.find(key);
+		if (node == nullptr)
+		{
+			throw std::out_of_range("Key not found in map");
+		}
+		return node->value;
+	}
+
+	void erase(const K& key) { tree_.remove(key); }
+
+	bool contains(const K& key) const { return tree_.contains(key); }
+
+	size_t size() const { return tree_.size(); }
+
+	bool empty() const { return tree_.empty(); }
+
+	void clear()
+	{
+		tree_.~avl_balanced_tree();
+		new (&tree_) avl_balanced_tree<K, V>();
+	}
+
+	void print() { tree_.print(); }
+
+	void inorder_print() { tree_.inorder_print(); }
+
+	iterator begin() { return iterator(tree_.get_root(), false); }
+
+	iterator end() { return iterator(tree_.get_root(), true); }
+
+   private:
+	avl_balanced_tree<K, V> tree_;
+};
+
+}  // namespace bmstu
